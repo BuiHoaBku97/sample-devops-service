@@ -1,4 +1,15 @@
-FROM ubuntu:latest
-LABEL authors="ACER"
+FROM gradle:9.8.2-jdk21 AS builder
 
-ENTRYPOINT ["top", "-b"]
+WORKDIR /app
+COPY . .
+
+RUN gradle bootJar -x test --no-daemon
+
+FROM eclipse-temurin:21-jre
+
+WORKDIR /app
+COPY --from=builder /app/build/libs/*.jar app.jar
+
+EXPOSE 8080
+
+ENTRYPOINT ["java", "-jar", "app.jar"]
